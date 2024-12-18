@@ -6,10 +6,10 @@ services:
     container_name: nemogpt2-chatbot
     volumes:
       - ./data:/workspace/data
-      - ./scripts:/workspace/scripts
+      - ./src:/workspace/src
       - ./models:/workspace/models
-    stdin_open: true
-    tty: true
+    stdin_open: true 
+    tty: true  
     environment:
       - MODEL_DIR=/workspace/models
     command: ["bash", "-c", "python /workspace/src/menu.py"]

@@ -9,7 +9,7 @@ COPY requirements.txt /workspace/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy scripts and data
-COPY ./scripts /workspace/scripts
+COPY ./src /workspace/src
 COPY ./data /workspace/data
 
 COPY ./src/menu.py /workspace/src/menu.py
