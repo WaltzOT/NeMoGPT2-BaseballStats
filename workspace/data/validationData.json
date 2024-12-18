@@ -1,0 +1,52 @@
+[
+    {
+        "query": "Who hit the most triples this season?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "triples", "scope": "season" }
+    },
+    {
+        "query": "How many strikeouts did John Doe record last game?",
+        "intent": "get_stat_by_player_and_game",
+        "entities": { "player": "John Doe", "stat": "strikeouts", "game": "last" }
+    },
+    {
+        "query": "What is the team's batting average for the playoffs?",
+        "intent": "get_team_stat",
+        "entities": { "stat": "batting_average", "scope": "playoffs" }
+    },
+    {
+        "query": "Who had the most walks last week?",
+        "intent": "get_stat_by_period",
+        "entities": { "stat": "walks", "period": "last_week" }
+    },
+    {
+        "query": "How many stolen bases did Sarah Runner have this year?",
+        "intent": "get_stat_by_player_and_scope",
+        "entities": { "player": "Sarah Runner", "stat": "stolen_bases", "scope": "year" }
+    },
+    {
+        "query": "Who threw the most shutouts in the 2023 season?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "shutouts", "scope": "2023_season" }
+    },
+    {
+        "query": "How many home runs did Mike Batter hit in last night's game?",
+        "intent": "get_stat_by_player_and_game",
+        "entities": { "player": "Mike Batter", "stat": "home_runs", "game": "last_night" }
+    },
+    {
+        "query": "What is the ERA of the team's bullpen this season?",
+        "intent": "get_team_stat",
+        "entities": { "stat": "ERA", "scope": "season" }
+    },
+    {
+        "query": "Who had the best slugging percentage in April?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "slugging_percentage", "period": "April" }
+    },
+    {
+        "query": "How many runs did the team allow in the last game?",
+        "intent": "get_team_stat_by_game",
+        "entities": { "stat": "runs_allowed", "game": "last" }
+    }
+]

@@ -1,0 +1,133 @@
+[
+    {
+      "query": "Who has the most home runs this season?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "home_runs", "scope": "season" }
+    },
+    {
+      "query": "Who leads the team in batting average?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "batting_average", "scope": "team" }
+    },
+    {
+      "query": "Who had the most RBIs last game?",
+      "intent": "get_stat_by_game",
+      "entities": { "stat": "RBIs", "game": "last" }
+    },
+    {
+      "query": "Which pitcher had the highest strikeout count this season?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "strikeouts", "scope": "season" }
+    },
+    {
+      "query": "How many hits did John Doe have in the last game?",
+      "intent": "get_stat_by_player_and_game",
+      "entities": { "player": "John Doe", "stat": "hits", "game": "last" }
+    },
+    {
+      "query": "What is Jane Smith's ERA for this season?",
+      "intent": "get_stat_by_player_and_scope",
+      "entities": { "player": "Jane Smith", "stat": "ERA", "scope": "season" }
+    },
+    {
+      "query": "How many runs did the team score last week?",
+      "intent": "get_team_stat",
+      "entities": { "stat": "runs", "period": "last_week" }
+    },
+    {
+      "query": "How many home runs has the team hit this season?",
+      "intent": "get_team_stat",
+      "entities": { "stat": "home_runs", "scope": "season" }
+    },
+    {
+      "query": "Who had the highest on-base percentage (OBP) in the playoffs?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "on_base_percentage", "scope": "playoffs" }
+    },
+    {
+      "query": "Which player had the most hits in the 2023 season?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "hits", "scope": "2023_season" }
+    },
+    {
+      "query": "Who was the best hitter last game?",
+      "intent": "get_best_performance",
+      "entities": { "performance_metric": "hitter", "game": "last" }
+    },
+    {
+      "query": "What was the score in the last game?",
+      "intent": "get_game_score",
+      "entities": { "game": "last" }
+    },
+    {
+      "query": "Who had the most strikeouts in the last game?",
+      "intent": "get_stat_by_game",
+      "entities": { "stat": "strikeouts", "game": "last" }
+    },
+    {
+      "query": "How many innings did Mike Pitcher throw in his last game?",
+      "intent": "get_stat_by_player_and_game",
+      "entities": { "player": "Mike Pitcher", "stat": "innings_pitched", "game": "last" }
+    },
+    {
+      "query": "Who hit the most doubles last month?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "doubles", "period": "last_month" }
+    },
+    {
+      "query": "Which player has the highest slugging percentage on the team?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "slugging_percentage", "scope": "team" }
+    },
+    {
+      "query": "What is the total number of games the team has won this season?",
+      "intent": "get_team_stat",
+      "entities": { "stat": "games_won", "scope": "season" }
+    },
+    {
+      "query": "Who has the lowest ERA among all pitchers in the playoffs?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "ERA", "scope": "playoffs" }
+    },
+    {
+      "query": "What are the stats for Sarah Batter in the last game?",
+      "intent": "get_player_stats",
+      "entities": { "player": "Sarah Batter", "game": "last" }
+    },
+    {
+      "query": "Who hit the game-winning run yesterday?",
+      "intent": "get_game_event",
+      "entities": { "event": "game_winning_run", "game": "yesterday" }
+    },
+    {
+      "query": "Who has stolen the most bases this season?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "stolen_bases", "scope": "season" }
+    },
+    {
+      "query": "Which pitcher has the most saves this year?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "saves", "scope": "season" }
+    },
+    {
+      "query": "What is the batting average of the team in the last week?",
+      "intent": "get_team_stat",
+      "entities": { "stat": "batting_average", "period": "last_week" }
+    },
+    {
+      "query": "Who had the longest hitting streak this year?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "hitting_streak", "scope": "year" }
+    },
+    {
+      "query": "How many runs did the team score in the last game?",
+      "intent": "get_team_stat_by_game",
+      "entities": { "stat": "runs", "game": "last" }
+    },
+    {
+      "query": "Who had the most RBIs last month?",
+      "intent": "get_top_stat",
+      "entities": { "stat": "RBIs", "period": "last_month" }
+    }
+  ]
+  

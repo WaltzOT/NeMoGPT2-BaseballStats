@@ -1,0 +1,77 @@
+[
+    {
+        "query": "Who has the highest batting average so far this season?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "batting_average", "scope": "season" }
+    },
+    {
+        "query": "How many strikeouts did Mike Pitcher have yesterday?",
+        "intent": "get_stat_by_player_and_game",
+        "entities": { "player": "Mike Pitcher", "stat": "strikeouts", "game": "yesterday" }
+    },
+    {
+        "query": "Who hit the most home runs in April?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "home_runs", "period": "April" }
+    },
+    {
+        "query": "How many games has the team won so far this year?",
+        "intent": "get_team_stat",
+        "entities": { "stat": "games_won", "scope": "year" }
+    },
+    {
+        "query": "Who had the highest RBI total in last week’s series?",
+        "intent": "get_stat_by_game",
+        "entities": { "stat": "RBIs", "period": "last_week_series" }
+    },
+    {
+        "query": "How many doubles did Jane Smith hit in the playoffs?",
+        "intent": "get_stat_by_player_and_scope",
+        "entities": { "player": "Jane Smith", "stat": "doubles", "scope": "playoffs" }
+    },
+    {
+        "query": "Which player has the best on-base percentage this season?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "on_base_percentage", "scope": "season" }
+    },
+    {
+        "query": "What’s John Doe’s slugging percentage for the season?",
+        "intent": "get_stat_by_player_and_scope",
+        "entities": { "player": "John Doe", "stat": "slugging_percentage", "scope": "season" }
+    },
+    {
+        "query": "Who had the longest home run streak in June?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "home_run_streak", "period": "June" }
+    },
+    {
+        "query": "What was the score during last Saturday's game?",
+        "intent": "get_game_score",
+        "entities": { "game": "last_saturday" }
+    },
+    {
+        "query": "How many runs did Sarah Batter drive in last game?",
+        "intent": "get_stat_by_player_and_game",
+        "entities": { "player": "Sarah Batter", "stat": "runs_batted_in", "game": "last" }
+    },
+    {
+        "query": "Who leads the team in stolen bases this year?",
+        "intent": "get_top_stat",
+        "entities": { "stat": "stolen_bases", "scope": "year" }
+    },
+    {
+        "query": "Which pitcher threw the most innings last game?",
+        "intent": "get_stat_by_game",
+        "entities": { "stat": "innings_pitched", "game": "last" }
+    },
+    {
+        "query": "What’s the team’s ERA for the current season?",
+        "intent": "get_team_stat",
+        "entities": { "stat": "ERA", "scope": "season" }
+    },
+    {
+        "query": "Who had the game-winning hit yesterday?",
+        "intent": "get_game_event",
+        "entities": { "event": "game_winning_hit", "game": "yesterday" }
+    }
+]
