@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  baseball-chatbot:
+    build: .
+    container_name: baseball-chatbot
+    volumes:
+      - ./data:/workspace/data
+      - ./scripts:/workspace/scripts
+      - ./models:/workspace/models
+    stdin_open: true
+    tty: true
+    environment:
+      - MODEL_DIR=/workspace/models
+    command: ["bash", "-c", "echo 'Specify the script to run using docker-compose run'"]
