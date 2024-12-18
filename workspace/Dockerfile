@@ -12,6 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./scripts /workspace/scripts
 COPY ./data /workspace/data
 
-# Set entrypoint for training script
-CMD ["python", "/workspace/scripts/initialTraining.py"]
+COPY ./src/menu.py /workspace/src/menu.py
+CMD ["python", "/workspace/src/menu.py"]
 
