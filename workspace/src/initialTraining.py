@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import torch
 from transformers import (
@@ -10,10 +11,13 @@ from transformers import (
 )
 from datasets import Dataset
 
+# Bot name as input
+bot_name = sys.argv[1] if len(sys.argv) > 1 else "default_bot"
+model_dir = f"/workspace/models/{bot_name}"
+
 # Paths
 train_data_path = "/workspace/data/trainingData.json"
 validation_data_path = "/workspace/data/validationData.json"
-model_dir = "/workspace/models/gpt2_nlp_model"
 
 # Load Data
 def load_data(file_path):
@@ -65,11 +69,11 @@ trainer = Trainer(
 )
 
 # Train the model
-print("Training GPT-2 model for intent classification and entity extraction...")
+print(f"Training GPT-2 model for bot '{bot_name}'...")
 trainer.train()
 print("Training complete. Saving model...")
 
 # Save the model
 model.save_pretrained(model_dir)
 tokenizer.save_pretrained(model_dir)
-print("Model saved successfully.")
+print(f"Model saved successfully at {model_dir}.")

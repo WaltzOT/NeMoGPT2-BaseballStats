@@ -1,14 +1,17 @@
 import os
+import sys
 import json
 import torch
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from datasets import Dataset
 
-# Paths
-model_dir = "/workspace/models/gpt2_nlp_model"
+# Bot name as input
+bot_name = sys.argv[1] if len(sys.argv) > 1 else "default_bot"
+model_dir = f"/workspace/models/{bot_name}"
 test_data_path = "/workspace/data/testData.json"
 
 # Load Model and Tokenizer
+print(f"Loading model for bot '{bot_name}'...")
 tokenizer = GPT2Tokenizer.from_pretrained(model_dir)
 model = GPT2LMHeadModel.from_pretrained(model_dir)
 tokenizer.pad_token = tokenizer.eos_token  # Ensure pad token is set
@@ -36,7 +39,6 @@ for idx, item in enumerate(test_data):
     print(f"Input: {query}")
     response = generate_response(query)
     
-    # Extract intent and entities (split by the "Intent" keyword for structured extraction)
     if "Intent:" in response:
         intent_part = response.split("Intent:")[1].strip()
         print(f"Generated Response: {intent_part}")
