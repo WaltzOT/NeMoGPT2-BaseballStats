@@ -11,4 +11,5 @@ Scripts used for training chatbots for baseball statistics in NeMo using GPT2. R
 If you'd like to use your own data please just upload it into the DATA folder and keep the same naming format and add it in, but remove the old data while doing so.
 
 - Also using primarily transformers library for base code at this point as it allows for CPU exclusive operations more easily. 
+
 OLD INITIAL REPO: https://github.com/WaltzOT/BaseballStatChatBot/
