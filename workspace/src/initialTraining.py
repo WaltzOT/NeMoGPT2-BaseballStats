@@ -1,79 +1,123 @@
 import os
-import sys
 import json
 import torch
-from transformers import (
-    GPT2Tokenizer,
-    GPT2LMHeadModel,
-    Trainer,
-    TrainingArguments,
-    DataCollatorForLanguageModeling,
-)
-from datasets import Dataset
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+from transformers import BertTokenizer, BertModel, AdamW
 
-# Bot name as input
 bot_name = sys.argv[1] if len(sys.argv) > 1 else "default_bot"
 model_dir = f"/workspace/models/{bot_name}"
+os.makedirs(model_dir, exist_ok=True)
 
-# Paths
-train_data_path = "/workspace/data/trainingData.json"
-validation_data_path = "/workspace/data/validationData.json"
+# Define Dataset Class
+class IntentEntityDataset(Dataset):
+    def __init__(self, data, tokenizer, max_length):
+        self.data = data
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        item = self.data[index]
+        query = item['query']
+        intent = item['intent']
+        entities = item['entities']
+
+        encoding = self.tokenizer(
+            query,
+            max_length=self.max_length,
+            padding='max_length',
+            truncation=True,
+            return_tensors="pt",
+        )
+
+        return {
+            'input_ids': encoding['input_ids'].squeeze(0),
+            'attention_mask': encoding['attention_mask'].squeeze(0),
+            'intent': intent,
+            'entities': entities,
+        }
+
+# Define the Model
+class IntentEntityClassifier(nn.Module):
+    def __init__(self, intent_labels, entity_labels):
+        super(IntentEntityClassifier, self).__init__()
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.intent_classifier = nn.Linear(self.bert.config.hidden_size, len(intent_labels))
+        self.entity_classifier = nn.Linear(self.bert.config.hidden_size, len(entity_labels))
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = outputs.pooler_output
+        intent_logits = self.intent_classifier(pooled_output)
+        entity_logits = self.entity_classifier(pooled_output)
+        return intent_logits, entity_logits
 
 # Load Data
 def load_data(file_path):
     with open(file_path, "r") as f:
         data = json.load(f)
-    formatted_data = [{"text": f"Query: {item['query']} | Intent: {item['intent']} | Entities: {json.dumps(item['entities'])}"} for item in data]
-    return Dataset.from_list(formatted_data)
+    return data
 
-train_dataset = load_data(train_data_path)
-validation_dataset = load_data(validation_data_path)
+train_data = load_data("/workspace/data/trainingData.json")
+validation_data = load_data("/workspace/data/validationData.json")
 
-# Tokenizer and Model
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-tokenizer.pad_token = tokenizer.eos_token  # Set pad token
+intent_labels = list(set([item['intent'] for item in train_data]))
+entity_labels = list(set([key for item in train_data for key in item['entities'].keys()]))
 
-model = GPT2LMHeadModel.from_pretrained("gpt2")
+intent_to_idx = {label: idx for idx, label in enumerate(intent_labels)}
+entity_to_idx = {label: idx for idx, label in enumerate(entity_labels)}
 
-# Tokenization function
-def tokenize_function(examples):
-    return tokenizer(examples["text"], truncation=True, padding="max_length", max_length=128)
+# Tokenizer and Dataset
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+max_length = 64
 
-tokenized_train_dataset = train_dataset.map(tokenize_function, batched=True, remove_columns=["text"])
-tokenized_validation_dataset = validation_dataset.map(tokenize_function, batched=True, remove_columns=["text"])
+train_dataset = IntentEntityDataset(train_data, tokenizer, max_length)
+val_dataset = IntentEntityDataset(validation_data, tokenizer, max_length)
 
-# Data Collator
-data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=16)
 
-# Training Arguments
-training_args = TrainingArguments(
-    output_dir=model_dir,
-    evaluation_strategy="epoch",
-    learning_rate=2e-5,
-    per_device_train_batch_size=4,
-    per_device_eval_batch_size=4,
-    num_train_epochs=5,
-    weight_decay=0.01,
-    save_strategy="epoch",
-    save_total_limit=2,
-    no_cuda=True  # Use CPU
-)
+# Model Initialization
+model = IntentEntityClassifier(intent_labels, entity_labels)
+criterion_intent = nn.CrossEntropyLoss()
+criterion_entity = nn.BCEWithLogitsLoss()
+optimizer = AdamW(model.parameters(), lr=5e-5)
 
-# Trainer
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    train_dataset=tokenized_train_dataset,
-    eval_dataset=tokenized_validation_dataset,
-    data_collator=data_collator,
-)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
 
-# Train the model
-print(f"Training GPT-2 model for bot '{bot_name}'...")
-trainer.train()
-print("Training complete. Saving model...")
+# Training Loop
+epochs = 5
+for epoch in range(epochs):
+    model.train()
+    for batch in train_loader:
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
+        intent_labels = torch.tensor([intent_to_idx[label] for label in batch['intent']]).to(device)
+        entity_labels = torch.zeros((len(batch['entities']), len(entity_labels))).to(device)
 
-# Save the model
+        for i, entities in enumerate(batch['entities']):
+            for entity, value in entities.items():
+                entity_labels[i, entity_to_idx[entity]] = 1
+
+        optimizer.zero_grad()
+
+        intent_logits, entity_logits = model(input_ids, attention_mask)
+
+        loss_intent = criterion_intent(intent_logits, intent_labels)
+        loss_entity = criterion_entity(entity_logits, entity_labels)
+        loss = loss_intent + loss_entity
+
+        loss.backward()
+        optimizer.step()
+
+    print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")
+
+# Save Model
 model.save_pretrained(model_dir)
 tokenizer.save_pretrained(model_dir)
-print(f"Model saved successfully at {model_dir}.")
+
+print(f"Model training complete and saved to {model_dir}.")
