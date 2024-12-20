@@ -1,5 +1,8 @@
-torch
-transformers
-datasets
-accelerate
-numpy<2
+torch>=1.11.0  # Ensure PyTorch version supports ONNX opset 14+
+transformers>=4.18.0  # Compatible with torch >=1.11.0
+datasets>=1.18.0  # Ensures compatibility with transformers
+accelerate>=0.10.0  # Accelerate version compatible with the above libraries
+numpy<2  # No change, required for other dependencies
+onnx>=1.12.0  # Ensure ONNX version supports opset 14+
+onnxruntime>=1.12.0  # Ensure compatibility with exported ONNX models
+opset_version=16

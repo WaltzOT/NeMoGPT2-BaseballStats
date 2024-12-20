@@ -77,3 +77,22 @@ print("Training complete. Saving model...")
 model.save_pretrained(model_dir)
 tokenizer.save_pretrained(model_dir)
 print(f"Model saved successfully at {model_dir}.")
+
+# Convert to ONNX format
+onnx_path = os.path.join(model_dir, f"{bot_name}.onnx")
+
+def save_to_onnx(model, tokenizer, output_path):
+    dummy_input = torch.randint(0, tokenizer.vocab_size, (1, 128))  # Example input
+    torch.onnx.export(
+        model,
+        dummy_input,
+        output_path,
+        input_names=["input_ids"],
+        output_names=["output"],
+        dynamic_axes={"input_ids": {0: "batch_size", 1: "sequence_length"}},
+        opset_version=14,
+        #verbose = True,
+    )
+    print(f"ONNX model saved at {output_path}")
+
+save_to_onnx(model, tokenizer, onnx_path)
