@@ -1,5 +1,5 @@
 # NeMoGPT2-BaseballStats
-Scripts used for training chatbots for baseball statistics in NeMo using GPT2. Running on CPU on and using Docker to complete tasks
+Scripts used for training chatbots for baseball statistics in NeMo using GPT2(or BERT). Running on CPU on and using Docker to complete tasks
 
 
 - To run just type in bash "docker-compose build"
