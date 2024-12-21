@@ -25,7 +25,7 @@ scope_year
 game_last
 game_last_night
 game_yesterday
-player_<player_name>  # Replace `<player_name>` with actual names or leave it dynamic.
+player_<player_name>
 period_last_week
 period_last_month
 period_April
