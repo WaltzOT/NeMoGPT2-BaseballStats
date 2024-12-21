@@ -1,0 +1,12 @@
+intent
+get_top_stat
+get_stat_by_game
+get_stat_by_player_and_game
+get_stat_by_player_and_scope
+get_team_stat
+get_team_stat_by_game
+get_stat_by_period
+get_best_performance
+get_game_score
+get_game_event
+get_player_stats

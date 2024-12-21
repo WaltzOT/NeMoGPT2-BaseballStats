@@ -1,13 +1,27 @@
 import os
+import sys
 import json
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer, BertModel, AdamW
+import pandas as pd
 
 bot_name = sys.argv[1] if len(sys.argv) > 1 else "default_bot"
 model_dir = f"/workspace/models/{bot_name}"
 os.makedirs(model_dir, exist_ok=True)
+
+# Load intent and entity labels from CSV files
+intent_labels_df = pd.read_csv('/workspace/data/intent_label.csv')
+intent_labels = intent_labels_df['intent'].tolist()
+
+entity_labels_df = pd.read_csv('/workspace/data/slot_label.csv')
+entity_labels = entity_labels_df['entity'].tolist()
+
+# Create mappings for intents and entities
+intent_to_idx = {label: idx for idx, label in enumerate(intent_labels)}
+entity_to_idx = {label: idx for idx, label in enumerate(entity_labels)}
+
 
 # Define Dataset Class
 class IntentEntityDataset(Dataset):
@@ -23,7 +37,13 @@ class IntentEntityDataset(Dataset):
         item = self.data[index]
         query = item['query']
         intent = item['intent']
-        entities = item['entities']
+        entities = item.get('entities', {})  # Default to an empty dictionary if entities are missing
+
+        # Ensure all entities have keys present in the entity_labels
+        entity_vector = {label: 0 for label in entity_labels}
+        for entity, value in entities.items():
+            if entity in entity_vector:
+                entity_vector[entity] = 1  # Mark as present
 
         encoding = self.tokenizer(
             query,
@@ -37,7 +57,7 @@ class IntentEntityDataset(Dataset):
             'input_ids': encoding['input_ids'].squeeze(0),
             'attention_mask': encoding['attention_mask'].squeeze(0),
             'intent': intent,
-            'entities': entities,
+            'entity_vector': list(entity_vector.values()),  # Output vector
         }
 
 # Define the Model
@@ -55,26 +75,17 @@ class IntentEntityClassifier(nn.Module):
         entity_logits = self.entity_classifier(pooled_output)
         return intent_logits, entity_logits
 
-# Load Data
-def load_data(file_path):
-    with open(file_path, "r") as f:
-        data = json.load(f)
-    return data
-
-train_data = load_data("/workspace/data/trainingData.json")
-validation_data = load_data("/workspace/data/validationData.json")
-
-intent_labels = list(set([item['intent'] for item in train_data]))
-entity_labels = list(set([key for item in train_data for key in item['entities'].keys()]))
-
-intent_to_idx = {label: idx for idx, label in enumerate(intent_labels)}
-entity_to_idx = {label: idx for idx, label in enumerate(entity_labels)}
+# Prepare Data
+with open('/workspace/data/trainingData.json') as f:
+    training_data = json.load(f)
+with open('/workspace/data/validationData.json') as f:
+    validation_data = json.load(f)
 
 # Tokenizer and Dataset
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 max_length = 64
 
-train_dataset = IntentEntityDataset(train_data, tokenizer, max_length)
+train_dataset = IntentEntityDataset(training_data, tokenizer, max_length)
 val_dataset = IntentEntityDataset(validation_data, tokenizer, max_length)
 
 train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
@@ -90,34 +101,61 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 # Training Loop
+# Training Loop
 epochs = 5
 for epoch in range(epochs):
     model.train()
+    total_loss = 0
     for batch in train_loader:
         input_ids = batch['input_ids'].to(device)
         attention_mask = batch['attention_mask'].to(device)
-        intent_labels = torch.tensor([intent_to_idx[label] for label in batch['intent']]).to(device)
-        entity_labels = torch.zeros((len(batch['entities']), len(entity_labels))).to(device)
+        intent_labels_tensor = torch.tensor(
+            [intent_to_idx[label] for label in batch['intent']]
+        ).to(device)
 
-        for i, entities in enumerate(batch['entities']):
-            for entity, value in entities.items():
-                entity_labels[i, entity_to_idx[entity]] = 1
+        # Corrected tensor handling for entity labels
+        # Ensure the shapes match by stacking entity_vectors and preserving batch size
+        # Ensure the shape of entity_labels_tensor matches entity_logits
+        entity_labels_tensor = torch.stack(
+           [torch.tensor(vector, dtype=torch.float32) for vector in batch['entity_vector']]
+        ).to(device)  # Shape: [batch_size, num_entity_labels]
+
+        # Ensure dimensions are consistent
+        entity_labels_tensor = entity_labels_tensor.transpose(0, 1)
 
         optimizer.zero_grad()
 
         intent_logits, entity_logits = model(input_ids, attention_mask)
 
-        loss_intent = criterion_intent(intent_logits, intent_labels)
-        loss_entity = criterion_entity(entity_logits, entity_labels)
+        loss_intent = criterion_intent(intent_logits, intent_labels_tensor)
+        loss_entity = criterion_entity(entity_logits, entity_labels_tensor)
         loss = loss_intent + loss_entity
 
         loss.backward()
         optimizer.step()
+        total_loss += loss.item()
 
-    print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")
+    print(f"Epoch {epoch + 1}/{epochs}, Loss: {total_loss:.4f}")
+
 
 # Save Model
-model.save_pretrained(model_dir)
-tokenizer.save_pretrained(model_dir)
+save_path = f"{model_dir}"
+os.makedirs(save_path, exist_ok=True)
 
-print(f"Model training complete and saved to {model_dir}.")
+# Save the model weights
+torch.save(model.state_dict(), os.path.join(save_path, "pytorch_model.bin"))
+
+# Save the configuration file
+model_config = {
+    "intent_labels": intent_labels,
+    "entity_labels": entity_labels,
+    "bert_model": "bert-base-uncased"
+}
+with open(os.path.join(save_path, "config.json"), "w") as f:
+    json.dump(model_config, f)
+
+# Save the tokenizer
+tokenizer.save_pretrained(save_path)
+
+print(f"Model training complete and saved to {save_path}.")
+
