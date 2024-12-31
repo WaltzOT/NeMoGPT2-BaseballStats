@@ -3,3 +3,5 @@ transformers
 datasets
 accelerate
 numpy<2
+sentencepiece
+scikit-learn
